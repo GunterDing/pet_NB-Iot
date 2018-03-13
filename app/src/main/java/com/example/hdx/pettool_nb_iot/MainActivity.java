@@ -1,5 +1,6 @@
 package com.example.hdx.pettool_nb_iot;
 
+import android.content.Context;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -10,6 +11,7 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 
 import com.baidu.mapapi.SDKInitializer;
 import com.baidu.mapapi.map.BaiduMap;
@@ -20,6 +22,7 @@ import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.model.LatLng;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements
@@ -32,20 +35,27 @@ public class MainActivity extends AppCompatActivity implements
     private LinearLayout mTabPosition;
     private LinearLayout mTabPets;
     private LinearLayout mTabUser;
-
     private ImageButton mPositionImg;
     private ImageButton mPetsImg;
     private ImageButton mUserImg;
 
     private MapView mMapView;
-    private BaiduMap mBaiduMap;
+    private static BaiduMap mBaiduMap;
+
+    private PetAdapter mPetAdapter;
+    private List<petItemInfo> mPetData;
+    private ListView mPetList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SDKInitializer.initialize(getApplicationContext());
         setContentView(R.layout.activity_main);
+
+
         initView();
         initViewPage();
+        initEachPage();
         initEvent();
     }
 
@@ -59,11 +69,21 @@ public class MainActivity extends AppCompatActivity implements
         mUserImg = (ImageButton)findViewById(R.id.id_tab_user_img);
     }
 
-    private void initViewPage() {
-
-        mMapView = (MapView) findViewById(R.id.mapView);
+    private void initEachPage(){
+        mMapView = (MapView) LayoutInflater.from(this).inflate(R.layout.position_view_layout, null).findViewById(R.id.mapView);
         mBaiduMap = mMapView.getMap();
+        mPetList = (ListView) LayoutInflater.from(this).inflate(R.layout.pets_view_layout, null).findViewById(R.id.id_pet_list);
+        mPetData = new LinkedList<petItemInfo>();
+        mPetData.add(new petItemInfo("小美", false, R.mipmap.ic_launcher_round));
+        mPetData.add(new petItemInfo("大壮", true, R.mipmap.ic_launcher_round));
+        mPetData.add(new petItemInfo("二狗", false, R.mipmap.ic_launcher_round));
+        mPetData.add(new petItemInfo("黄鹤楼", true, R.mipmap.ic_launcher_round));
+        mPetAdapter = new PetAdapter((LinkedList<petItemInfo>) mPetData, MainActivity.this);
+        mPetList.setAdapter(mPetAdapter);
+    }
 
+
+    private void initViewPage() {
         LayoutInflater mLayoutInflater = LayoutInflater.from(this);
         View tabViewPosition = mLayoutInflater.inflate(R.layout.position_view_layout,null);
         View tabViewPets = mLayoutInflater.inflate(R.layout.pets_view_layout,null);
@@ -120,4 +140,23 @@ public class MainActivity extends AppCompatActivity implements
         mTabUser.setOnClickListener(this);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        //在activity执行onDestroy时执行mMapView.onDestroy()，实现地图生命周期管理
+        mMapView.onDestroy();
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        //在activity执行onResume时执行mMapView. onResume ()，实现地图生命周期管理
+        mMapView.onResume();
+    }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //在activity执行onPause时执行mMapView. onPause ()，实现地图生命周期管理
+        mMapView.onPause();
+    }
 }
+
